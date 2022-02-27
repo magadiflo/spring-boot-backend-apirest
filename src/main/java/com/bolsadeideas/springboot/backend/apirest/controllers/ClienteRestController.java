@@ -61,9 +61,17 @@ public class ClienteRestController {
 	 * del request en formato json es que usamos esta anotación
 	 */
 	@PostMapping("/clientes")
-	@ResponseStatus(HttpStatus.CREATED)
-	public Cliente create(@RequestBody Cliente cliente) {
-		return this.clienteService.save(cliente);
+	public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+		Cliente clienteRegistrado = null;
+		Map<String, Object> response = new HashMap<>();
+		try {
+			clienteRegistrado = this.clienteService.save(cliente);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al registrar el cliente en la BD");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<Cliente>(clienteRegistrado, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/clientes/{id}")
